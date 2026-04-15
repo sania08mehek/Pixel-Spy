@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelSpy Lab — XSS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-logo">🛡️ <span>Pixel</span>Spy Lab</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="xss.html" class="active">XSS</a>
+            <a href="sqli.html">SQLi</a>
+            <a href="dom.html">DOM</a>
+        </div>
+        <div class="nav-right">
+            <button class="theme-toggle" id="theme-toggle">🌙 Dark Mode</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="intro-box">
+            <h1>Cross-Site Scripting (XSS)</h1>
+            <p>
+                XSS occurs when an application includes untrusted data in a web page without proper validation or escaping. 
+                PixelSpy uses AST-based static analysis to track how user input (Sources) flows into dangerous areas (Sinks).
+            </p>
+        </div>
+
+        <!-- SCENARIO 1 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="vuln-badge xss">Reflected XSS</span> Scenario 1: Basic Injection</div>
+            </div>
+            <div class="card-desc">
+                In this scenario, a search query is reflected directly back into the page. 
+                PixelSpy will detect the flow from <code>location.search</code> to <code>innerHTML</code>.
+            </div>
+            <div class="action-box">
+                <input type="text" id="xss-input-1" class="form-input" value="<svg onload=alert('XSS_Caught')>">
+                <button class="btn btn-primary" onclick="triggerXSS1()">🚀 Trigger Vulnerability</button>
+            </div>
+            <div id="output-1" class="output">Click trigger to see result.</div>
+        </div>
+
+        <!-- SCENARIO 2 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="vuln-badge xss">High Risk</span> Scenario 2: `eval()` Injection</div>
+            </div>
+            <div class="card-desc">
+                Using <code>eval()</code> with user-controlled strings is extremely dangerous. 
+                PixelSpy's static engine flags this as a <strong>CRITICAL</strong> severity issue.
+            </div>
+            <div class="action-box">
+                <input type="text" id="xss-input-2" class="form-input" value="alert('Executing_via_eval')">
+                <button class="btn btn-danger" onclick="triggerXSS2()">⚡ Trigger Critical Sink</button>
+            </div>
+            <div id="output-2" class="output">Output will be evaluated.</div>
+        </div>
+    </div>
+
+    <footer>
+        PixelSpy Lab — For Security Testing Purposes Only
+    </footer>
+
+    <script>
+        // Theme logic
+        const themeBtn = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const savedTheme = localStorage.getItem('pixelspy-lab-theme') || 'dark';
+        html.setAttribute('data-theme', savedTheme);
+        updateBtnText(savedTheme);
+
+        themeBtn.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', target);
+            localStorage.setItem('pixelspy-lab-theme', target);
+            updateBtnText(target);
+        });
+
+        function updateBtnText(theme) {
+            themeBtn.innerHTML = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // ── VULNERABILITY TRIGGERS ──────────────────────────────────────────
+
+        function triggerXSS1() {
+            const val = document.getElementById('xss-input-1').value;
+            const output = document.getElementById('output-1');
+            output.innerHTML = "You searched for: " + val;
+            output.classList.add('hit');
+            console.log("XSS Scenario 1 Triggered: Data flowing to innerHTML");
+        }
+
+        function triggerXSS2() {
+            const val = document.getElementById('xss-input-2').value;
+            const output = document.getElementById('output-2');
+            try {
+                output.textContent = "Executing eval...";
+                eval(val);
+                output.classList.add('hit');
+                output.textContent = "Successfully evaluated payload.";
+            } catch(e) {
+                output.textContent = "Execution Error: " + e.message;
+            }
+        }
+    </script>
+</body>
+</html>

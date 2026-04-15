@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelSpy Lab — DOM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-logo">🛡️ <span>Pixel</span>Spy Lab</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="xss.html">XSS</a>
+            <a href="sqli.html">SQLi</a>
+            <a href="dom.html" class="active">DOM</a>
+        </div>
+        <div class="nav-right">
+            <button class="theme-toggle" id="theme-toggle">🌙 Dark Mode</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="intro-box">
+            <h1>DOM-Based Vulnerabilities</h1>
+            <p>
+                DOM-based security issues occur when an application modifies the page structure using untrusted data. 
+                PixelSpy's <code>MutationObserver</code> monitors real-time changes to attributes and elements to flag suspicious activity.
+            </p>
+        </div>
+
+        <!-- SCENARIO 1 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="vuln-badge dom">DOM XSS</span> Scenario 1: Attribute Injection</div>
+            </div>
+            <div class="card-desc">
+                Injecting a <code>javascript:</code> URL into a link attribute. 
+                PixelSpy watches for attribute changes and flags this instantly.
+            </div>
+            <div class="action-box">
+                <input type="text" id="dom-input-1" class="form-input" value="javascript:alert('DOM_Attribute_XSS')">
+                <button class="btn btn-primary" onclick="triggerDOM1()">🔗 Inject Link Attribute</button>
+            </div>
+            <div id="output-1" class="output">
+                <a href="#" id="test-link">Click the button above to update this link</a>
+            </div>
+        </div>
+
+        <!-- SCENARIO 2 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="vuln-badge dom">Detection</span> Scenario 2: Dynamic Script Injection</div>
+            </div>
+            <div class="card-desc">
+                Adding a new <code>&lt;script&gt;</code> tag to the document. 
+                PixelSpy flags any newly added scripts as a potential security risk.
+            </div>
+            <div class="action-box">
+                <button class="btn btn-danger" onclick="triggerDOM2()">💉 Inject External Script</button>
+            </div>
+            <div id="output-2" class="output">Click the button to inject a mock script tag.</div>
+        </div>
+    </div>
+
+    <footer>
+        PixelSpy Lab — DOM mutations are detected in real-time.
+    </footer>
+
+    <script>
+        // Theme logic
+        const themeBtn = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const savedTheme = localStorage.getItem('pixelspy-lab-theme') || 'dark';
+        html.setAttribute('data-theme', savedTheme);
+        updateBtnText(savedTheme);
+
+        themeBtn.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', target);
+            localStorage.setItem('pixelspy-lab-theme', target);
+            updateBtnText(target);
+        });
+
+        function updateBtnText(theme) {
+            themeBtn.innerHTML = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // ── VULNERABILITY TRIGGERS ──────────────────────────────────────────
+
+        function triggerDOM1() {
+            const val = document.getElementById('dom-input-1').value;
+            const link = document.getElementById('test-link');
+            const output = document.getElementById('output-1');
+            
+            link.setAttribute('href', val);
+            link.textContent = "Malicious Link Injected (Click to test)";
+            output.classList.add('hit');
+            console.log("DOM Scenario 1 Triggered: href attribute updated");
+        }
+
+        function triggerDOM2() {
+            const output = document.getElementById('output-2');
+            
+            const script = document.createElement('script');
+            script.textContent = "console.log('Mock script executed');";
+            document.body.appendChild(script);
+            
+            output.innerHTML = "<span style='color:var(--danger)'>Script tag injected!</span> Check PixelSpy Live Events.";
+            output.classList.add('hit');
+        }
+    </script>
+</body>
+</html>

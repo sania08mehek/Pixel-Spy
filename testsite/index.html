@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelSpy Lab — Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-logo">🛡️ <span>Pixel</span>Spy Lab</a>
+        <div class="nav-links">
+            <a href="index.html" class="active">Home</a>
+            <a href="xss.html">XSS</a>
+            <a href="sqli.html">SQLi</a>
+            <a href="dom.html">DOM</a>
+        </div>
+        <div class="nav-right">
+            <button class="theme-toggle" id="theme-toggle">🌙 Dark Mode</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="intro-box">
+            <h1>Welcome to PixelSpy Lab</h1>
+            <p>
+                This environment is designed to test and demonstrate the security analysis capabilities of the PixelSpy DevTools extension. 
+                Each module contains real-world vulnerability patterns that PixelSpy can detect in real-time.
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🚀 Getting Started</div>
+            </div>
+            <div class="card-desc">
+                To begin your security audit, follow these simple steps:
+            </div>
+            <ol style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-main); display: flex; flex-direction: column; gap: 10px;">
+                <li>Open <strong>DevTools</strong> (F12 or Right Click > Inspect).</li>
+                <li>Select the <strong>PixelSpy</strong> tab.</li>
+                <li>Navigate to one of the labs using the menu above.</li>
+                <li>Click the <strong>"Trigger"</strong> buttons in the labs to see security events appear in PixelSpy.</li>
+            </ol>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-title"><span class="vuln-badge xss">XSS</span> Cross-Site Scripting</div>
+                <div class="card-desc">Practice reflected and filtered XSS patterns. See how PixelSpy traces code execution.</div>
+                <a href="xss.html" class="btn btn-primary" style="text-align: center; text-decoration: none;">Explore XSS</a>
+            </div>
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-title"><span class="vuln-badge sqli">SQLi</span> SQL Injection</div>
+                <div class="card-desc">Test the heuristic engine with suspicious API requests and database injection payloads.</div>
+                <a href="sqli.html" class="btn btn-primary" style="text-align: center; text-decoration: none;">Explore SQLi</a>
+            </div>
+            <div class="card" style="margin-bottom: 0;">
+                <div class="card-title"><span class="vuln-badge dom">DOM</span> DOM Vulnerabilities</div>
+                <div class="card-desc">Monitor real-time changes to the DOM and detect insecure attribute injections.</div>
+                <a href="dom.html" class="btn btn-primary" style="text-align: center; text-decoration: none;">Explore DOM</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        PixelSpy Lab — Educational Security Environment<br>
+        Version 2.1 • Created for Developer Security Training
+    </footer>
+
+    <script>
+        const themeBtn = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // Initialize theme
+        const savedTheme = localStorage.getItem('pixelspy-lab-theme') || 'dark';
+        html.setAttribute('data-theme', savedTheme);
+        updateBtnText(savedTheme);
+
+        themeBtn.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', target);
+            localStorage.setItem('pixelspy-lab-theme', target);
+            updateBtnText(target);
+        });
+
+        function updateBtnText(theme) {
+            themeBtn.innerHTML = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+    </script>
+</body>
+</html>

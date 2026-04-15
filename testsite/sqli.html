@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelSpy Lab — SQLi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-logo">🛡️ <span>Pixel</span>Spy Lab</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="xss.html">XSS</a>
+            <a href="sqli.html" class="active">SQLi</a>
+            <a href="dom.html">DOM</a>
+        </div>
+        <div class="nav-right">
+            <button class="theme-toggle" id="theme-toggle">🌙 Dark Mode</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="intro-box">
+            <h1>SQL Injection (SQLi)</h1>
+            <p>
+                SQL injection occurs when an application passes unvalidated user input directly to a database query. 
+                PixelSpy monitors all <code>fetch()</code> and <code>XHR</code> requests in real-time and uses a heuristic engine to flag suspicious parameters.
+            </p>
+        </div>
+
+        <!-- SCENARIO 1 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="vuln-badge sqli">Medium Risk</span> Scenario 1: Numeric ID Lookup</div>
+            </div>
+            <div class="card-desc">
+                Fetching a user by ID using <code>/api/user?id=101</code>. 
+                PixelSpy flags the "id" parameter name and numeric value as a potential injection target.
+            </div>
+            <div class="action-box">
+                <input type="text" id="sqli-input-1" class="form-input" value="101">
+                <button class="btn btn-primary" onclick="triggerSQLi1()">👤 Fetch User Data</button>
+            </div>
+            <div id="output-1" class="output">Click trigger to fire network request.</div>
+        </div>
+
+        <!-- SCENARIO 2 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="vuln-badge sqli">High Risk</span> Scenario 2: Keyword Injection</div>
+            </div>
+            <div class="card-desc">
+                Using SQL keywords like <code>UNION SELECT</code> in a search query. 
+                This will trigger a <strong>HIGH</strong> confidence alert in PixelSpy.
+            </div>
+            <div class="action-box">
+                <input type="text" id="sqli-input-2" class="form-input" value="laptop' UNION SELECT username,password FROM users --">
+                <button class="btn btn-danger" onclick="triggerSQLi2()">🔍 Search Database</button>
+            </div>
+            <div id="output-2" class="output">Click trigger to fire dangerous request.</div>
+        </div>
+    </div>
+
+    <footer>
+        PixelSpy Lab — SQLi events appear in the Live Stream panel.
+    </footer>
+
+    <script>
+        // Theme logic
+        const themeBtn = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const savedTheme = localStorage.getItem('pixelspy-lab-theme') || 'dark';
+        html.setAttribute('data-theme', savedTheme);
+        updateBtnText(savedTheme);
+
+        themeBtn.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', target);
+            localStorage.setItem('pixelspy-lab-theme', target);
+            updateBtnText(target);
+        });
+
+        function updateBtnText(theme) {
+            themeBtn.innerHTML = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // ── VULNERABILITY TRIGGERS ──────────────────────────────────────────
+
+        function triggerSQLi1() {
+            const val = document.getElementById('sqli-input-1').value;
+            const url = "/api/user?id=" + encodeURIComponent(val);
+            const output = document.getElementById('output-1');
+            
+            output.textContent = "Fetching: " + url;
+            
+            fetch(url).catch(err => {
+                output.innerHTML = "<span style='color:var(--success)'>Request sent!</span> Check PixelSpy Live Events for the <strong>SQLi</strong> flag.";
+                output.classList.add('hit');
+            });
+        }
+
+        function triggerSQLi2() {
+            const val = document.getElementById('sqli-input-2').value;
+            const url = "/api/products?search=" + encodeURIComponent(val);
+            const output = document.getElementById('output-2');
+            
+            output.textContent = "Firing: " + url;
+            
+            // XHR Version to show variety
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url);
+            xhr.send();
+            
+            setTimeout(() => {
+                output.innerHTML = "<span style='color:var(--danger)'>Dangerous request fired!</span> Check PixelSpy Issues list.";
+                output.classList.add('hit');
+            }, 200);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>PixelSpy Debug Test</h1>
+    
+    <button onclick="testSQLi()">Test SQLi Detection</button>
+    <button onclick="testDOMXSS()">Test DOM XSS</button>
+    <button onclick="clearConsole()">Clear Console</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        function testSQLi() {
+            console.log("Testing SQLi detection...");
+            
+            // Test various SQLi patterns
+            fetch("/api/user?id=101").catch(() => {});
+            fetch("/api/products?search=laptop UNION SELECT * FROM users").catch(() => {});
+            fetch("/api/admin?filter=' OR 1=1 --").catch(() => {});
+            
+            document.getElementById("output").innerHTML = "SQLi tests sent - check console and PixelSpy panel";
+        }
+        
+        function testDOMXSS() {
+            console.log("Testing DOM XSS detection...");
+            
+            // Create a link with javascript: URL
+            var a = document.createElement("a");
+            a.href = "javascript:alert('xss-test')";
+            a.textContent = "Click for XSS";
+            document.getElementById("output").appendChild(a);
+            
+            document.getElementById("output").innerHTML += "<br>DOM XSS test created - check console and PixelSpy panel";
+        }
+        
+        function clearConsole() {
+            console.clear();
+        }
+    </script>
+</body>
+</html>

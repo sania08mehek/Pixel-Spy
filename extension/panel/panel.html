@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PixelSpy — Security Scanner</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+
+    <!-- ── TOOLBAR ──────────────────────────────────────────────────────────── -->
+    <header class="toolbar">
+      <div class="toolbar-left">
+        <div class="logo">
+          <span class="logo-pixel">Pixel</span><span class="logo-spy">Spy</span>
+        </div>
+        <div class="toolbar-divider"></div>
+        <button class="btn btn-primary" id="btn-scan">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Scan
+        </button>
+        <button class="btn btn-ghost" id="btn-clear">Clear</button>
+      </div>
+
+      <div class="toolbar-center">
+        <nav class="tab-nav" id="tab-nav">
+          <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+          <button class="tab-btn" data-tab="issues">
+            Issues
+            <span class="tab-badge hidden" id="tab-badge-issues">0</span>
+          </button>
+          <button class="tab-btn" data-tab="surface">Attack Surface</button>
+          <button class="tab-btn" data-tab="events">
+            Events
+            <span class="tab-badge" id="tab-badge-events">0</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="toolbar-right">
+        <div class="score-chip" id="score-chip" title="Security Score">
+          <span class="score-chip-label">Score</span>
+          <span class="score-chip-value" id="score-chip-value">—</span>
+        </div>
+        <button class="btn btn-ghost" id="theme-toggle" title="Toggle Light/Dark Mode">🌙</button>
+        <button class="btn btn-ghost" id="btn-export" title="Export JSON report">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+      </div>
+    </header>
+
+    <!-- ── STATUS BAR ────────────────────────────────────────────────────────── -->
+    <div class="status-bar">
+      <span id="status-text">Ready — click Scan to analyze the current page.</span>
+      <span id="issue-count" class="issue-count hidden"></span>
+    </div>
+
+    <!-- ── TAB CONTENT ───────────────────────────────────────────────────────── -->
+    <div class="tab-content-wrap">
+
+      <!-- DASHBOARD TAB ──────────────────────────────────────────────────────── -->
+      <div class="tab-pane active" id="tab-dashboard">
+        <div class="dashboard-grid">
+
+          <!-- Score card -->
+          <div class="dash-card score-card" id="dash-score-card">
+            <div class="score-ring-wrap">
+              <svg class="score-ring" viewBox="0 0 80 80">
+                <circle class="score-ring-bg" cx="40" cy="40" r="32"/>
+                <circle class="score-ring-fill" id="score-ring-fill" cx="40" cy="40" r="32"
+                  stroke-dasharray="201 201" stroke-dashoffset="201"/>
+              </svg>
+              <div class="score-ring-inner">
+                <div class="score-number" id="score-number">—</div>
+                <div class="score-grade" id="score-grade">–</div>
+              </div>
+            </div>
+            <div class="score-meta">
+              <div class="score-meta-title">Security Score</div>
+              <div class="score-meta-sub" id="score-meta-sub">Run a scan to evaluate</div>
+            </div>
+          </div>
+
+          <!-- Issue summary cards -->
+          <div class="dash-card stat-card" id="stat-critical">
+            <div class="stat-icon critical">!</div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-val-critical">0</div>
+              <div class="stat-label">Critical</div>
+            </div>
+          </div>
+          <div class="dash-card stat-card" id="stat-high">
+            <div class="stat-icon high">↑</div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-val-high">0</div>
+              <div class="stat-label">High</div>
+            </div>
+          </div>
+          <div class="dash-card stat-card" id="stat-medium">
+            <div class="stat-icon medium">~</div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-val-medium">0</div>
+              <div class="stat-label">Medium</div>
+            </div>
+          </div>
+
+          <!-- Category scores -->
+          <div class="dash-card category-card">
+            <div class="dash-card-title">Category Scores</div>
+            <div class="category-list" id="category-list">
+              <div class="category-empty">Run a scan to see scores.</div>
+            </div>
+          </div>
+
+          <!-- OWASP Top 10 -->
+          <div class="dash-card owasp-card">
+            <div class="dash-card-title">OWASP Top 10 Coverage</div>
+            <div class="owasp-grid" id="owasp-grid">
+              <div class="category-empty">Run a scan to see OWASP status.</div>
+            </div>
+          </div>
+
+          <!-- Surface findings -->
+          <div class="dash-card findings-card">
+            <div class="dash-card-title">Surface Findings</div>
+            <div class="findings-list" id="findings-list">
+              <div class="category-empty">Run a scan to see findings.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ISSUES TAB ─────────────────────────────────────────────────────────── -->
+      <div class="tab-pane" id="tab-issues">
+        <div class="issues-layout">
+
+          <!-- Left: Issue explorer -->
+          <aside class="issue-explorer">
+            <div class="pane-header">
+              <span>Issues</span>
+              <div class="filter-row">
+                <div class="filter-group" id="filter-type">
+                  <button class="filter-btn active" data-filter="ALL">All</button>
+                  <button class="filter-btn" data-filter="XSS">XSS</button>
+                  <button class="filter-btn" data-filter="SQLi">SQLi</button>
+                </div>
+                <div class="filter-group" id="filter-severity">
+                  <button class="filter-btn active" data-sev="ALL">All Sev</button>
+                  <button class="filter-btn" data-sev="CRITICAL">Crit</button>
+                  <button class="filter-btn" data-sev="HIGH">High</button>
+                  <button class="filter-btn" data-sev="MEDIUM">Med</button>
+                </div>
+              </div>
+            </div>
+            <div class="issue-list" id="issue-list">
+              <div class="empty-state">No issues found. Run a scan.</div>
+            </div>
+          </aside>
+
+          <!-- Right: Detail panel -->
+          <section class="detail-panel">
+            <div class="pane-header"><span>Issue Detail</span></div>
+            <div class="detail-content" id="detail-content">
+              <div class="empty-state">Select an issue to view details.</div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ATTACK SURFACE TAB ─────────────────────────────────────────────────── -->
+      <div class="tab-pane" id="tab-surface">
+        <div class="surface-layout" id="surface-layout">
+          <div class="empty-state surface-empty">Run a scan to map the attack surface.</div>
+        </div>
+      </div>
+
+      <!-- EVENTS TAB ─────────────────────────────────────────────────────────── -->
+      <div class="tab-pane" id="tab-events">
+        <div class="pane-header">
+          <span>Live Events</span>
+          <span class="event-count-badge" id="event-count">0</span>
+          <span class="auto-refresh-label">auto-refresh 3s</span>
+        </div>
+        <div class="event-table-wrap">
+          <table class="event-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>URL / Detail</th>
+                <th>Method</th>
+                <th>Flag</th>
+              </tr>
+            </thead>
+            <tbody id="event-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- end tab-content-wrap -->
+
+    <script src="panel.js"></script>
+  </body>
+</html>
